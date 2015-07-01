@@ -403,8 +403,10 @@ function renderQuestion(question_dic) {
     window.editorPage = editor.refs.editor;
     window.itemRenderer = window.editorPage.renderer;
     if (new_perseus_question == false){
-        $('#edit-button-collector').append('<span class="simple-button green" id="prev_question">編輯上一題</span>');
-        $('#edit-button-collector').append('<span class="simple-button green" id="next_question">編輯下一題</span>');
+        if ($('#edit-button-collector').children().length == 0) {
+            $('#edit-button-collector').append('<span class="simple-button green" id="prev_question">編輯上一題</span>');
+            $('#edit-button-collector').append('<span class="simple-button green" id="next_question">編輯下一題</span>');
+        }
         $('#prev_question').on('click',function(e){
             if(question_dic.qid == 0){
                 alert('沒有上一題囉！');
