@@ -1,5 +1,5 @@
 /*! Perseus | http://github.com/Khan/perseus */
-// commit 10cd8f53b48995e12437eb7b73c8bae5d127ead8
+// commit c3b673f72248510b4baeeeb21ab495e6a0d513dc
 // branch gh-pages
 !function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Perseus=e():"undefined"!=typeof global?global.Perseus=e():"undefined"!=typeof self&&(self.Perseus=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -3733,6 +3733,8 @@ var Editor = require("./editor.jsx");
 var InfoTip = require("react-components/info-tip");
 var Widgets = require("./widgets.js");
 
+var WidgetsInAnswerAreaEditor = ['Image'];
+
 var AnswerAreaEditor = React.createClass({displayName: 'AnswerAreaEditor',
     getDefaultProps: function() {
         return {
@@ -3762,19 +3764,7 @@ var AnswerAreaEditor = React.createClass({displayName: 'AnswerAreaEditor',
 
         return React.DOM.div( {className:"perseus-answer-editor"}, 
             React.DOM.div( {className:"perseus-answer-options"}, 
-            React.DOM.div(null, React.DOM.label(null, 
-                ' ',"Show calculator:",' ',
-                React.DOM.input( {type:"checkbox", checked:this.props.calculator,
-                    onChange:function(e)  {
-                        this.props.onChange({calculator: e.target.checked});
-                    }.bind(this)} )
-            ),
-            InfoTip(null, 
-                React.DOM.p(null, "Use the calculator when completing difficult calculations is"+' '+
-                "NOT the intent of the question. DON’T use the calculator when"+' '+
-                "testing the student’s ability to complete different types of"+' '+
-                "computations.")
-            )
+            React.DOM.div(null
             ),
             React.DOM.div(null, React.DOM.label(null, 
                 ' ',"Answer type:",' ',
@@ -3788,16 +3778,10 @@ var AnswerAreaEditor = React.createClass({displayName: 'AnswerAreaEditor',
                             }.bind(this));
                         }.bind(this)}, 
                     React.DOM.option( {value:"radio"}, "Multiple choice"),
-                    React.DOM.option( {value:"table"}, "Table of values"),
-                    React.DOM.option( {value:"input-number"}, "Text input (number)"),
-                    React.DOM.option( {value:"expression"}, "Expression / Equation"),
-                    React.DOM.option( {value:"multiple"}, "Custom format")
+                    React.DOM.option( {value:"input-number"}, "Text input (number)")
                 )
-            ),
-            InfoTip(null, 
-                React.DOM.p(null, "Use the custom format if the question is in the question"+' '+
-                "area, and tell the students how to complete the problem.")
-            ))
+            )
+            )
             ),
             React.DOM.div( {className:cls !== Editor ? "perseus-answer-widget" : ""}, 
                 editor
@@ -8121,6 +8105,9 @@ var DragTarget = require("react-components/drag-target");
 // like [[snowman input-number 1]]
 var rWidgetSplit = /(\[\[\u2603 [a-z-]+ [0-9]+\]\])/g;
 
+// widgets junyi can use now:
+var widgetsInEditor = ['image'];
+
 var WidgetSelect = React.createClass({displayName: 'WidgetSelect',
     handleChange: function(e) {
         var widgetType = e.target.value;
@@ -8139,8 +8126,9 @@ var WidgetSelect = React.createClass({displayName: 'WidgetSelect',
     },
     render: function() {
         var widgets = Widgets.getPublicWidgets();
-        var orderedWidgetNames = _.sortBy(_.keys(widgets), function(name)  {
-            return widgets[name].displayName;
+        var junyiValidWidgets = _.pick(widgets, widgetsInEditor[0]);
+        var orderedWidgetNames = _.sortBy(_.keys(junyiValidWidgets), function(name)  {
+            return junyiValidWidgets[name].displayName;
         });
 
         return React.DOM.select( {onChange:this.handleChange}, 
@@ -8439,9 +8427,7 @@ var Editor = React.createClass({displayName: 'Editor',
             templatesDropDown = React.DOM.select( {onChange:this.addTemplate}, 
                 React.DOM.option( {value:""}, "Insert template","\u2026"),
                 React.DOM.option( {disabled:true}, "--"),
-                React.DOM.option( {value:"table"}, "Table"),
-                React.DOM.option( {value:"alignment"}, "Aligned equations"),
-                React.DOM.option( {value:"piecewise"}, "Piecewise function")
+                React.DOM.option( {value:"table"}, "Table")
             );
 
             if (!this.props.immutableWidgets) {
@@ -12393,11 +12379,12 @@ var Util = {
             a = /\+/g,  // Regex for replacing addition symbol with a space
             r = /([^&=]+)=?([^&]*)/g,
             d = function(s) { return decodeURIComponent(s.replace(a, " ")); };
-
-        while ((e = r.exec(query))) {
+        
+        
+        while (e = r.exec(query)) {
             urlParams[d(e[1])] = d(e[2]);
         }
-
+        
         return urlParams;
     },
 
@@ -12906,7 +12893,8 @@ module.exports = {
     editor: CategorizerEditor,
     transform: function(editorProps)  {
         return _.pick(editorProps, "items", "categories");
-    }
+    },
+    hidden: true
 };
 
 
@@ -13165,7 +13153,8 @@ module.exports = {
     displayName: "Drop down",
     widget: Dropdown,
     editor: DropdownEditor,
-    transform: propTransform
+    transform: propTransform,
+    hidden: true
 };
 
 },{"../components/fancy-select.jsx":120,"../mixins/jsonify-props.jsx":160,"../perseus-api.jsx":162,"../util.js":168,"react":115,"react-components/info-tip":5}],174:[function(require,module,exports){
@@ -14215,7 +14204,8 @@ module.exports = {
     editor: ExpressionEditor,
     transform: function(editorProps)  {
         return _.pick(editorProps, "times", "functions");
-    }
+    },
+    hidden: true
 };
 
 },{"../components/input-with-examples.jsx":126,"../components/math-input.jsx":127,"../components/prop-check-box.jsx":130,"../components/tex-buttons.jsx":133,"../enabled-features.jsx":144,"../mixins/changeable.jsx":159,"../mixins/jsonify-props.jsx":160,"../perseus-api.jsx":162,"../tex.jsx":167,"react":115,"react-components/info-tip":5,"react-components/tooltip":114}],177:[function(require,module,exports){
@@ -14647,46 +14637,12 @@ var ImageEditor = React.createClass({displayName: 'ImageEditor',
                     React.DOM.p(null, "Create an image in graphie, or use the \"Add image\""+' '+
                     "function to create a background.")
                 )
-            ),
-            this.props.backgroundImage.url && React.DOM.div(null, 
-                React.DOM.div(null, "Graphie X range:",' ',
-                    RangeInput(
-                        {value:this.props.range[0],
-                        onChange:_.partial(this.onRangeChange, 0)} )
-                ),
-                React.DOM.div(null, "Graphie Y range:",' ',
-                    RangeInput(
-                        {value:this.props.range[1],
-                        onChange:_.partial(this.onRangeChange, 1)} )
-                )
             )
         );
 
-        var graphSettings = React.DOM.div( {className:"graph-settings"}, 
-                React.DOM.div( {className:"add-label"}, 
-                    React.DOM.button( {onClick:this.addLabel}, 
-                        ' ',"Add a label",' '
-                    )
-                ),
-                this.props.labels.length > 0 &&
-                React.DOM.table( {className:"label-settings"}, 
-                    React.DOM.thead(null, 
-                    React.DOM.tr(null, 
-                        React.DOM.th(null, "Coordinates"),
-                        React.DOM.th(null, "Content"),
-                        React.DOM.th(null, "Alignment"),
-                        React.DOM.th(null)
-                    )
-                    ),
-                    React.DOM.tbody(null, 
-                        this.props.labels.map(this._renderRowForLabel)
-                    )
-                )
-        );
-
         return React.DOM.div( {className:"perseus-widget-image"}, 
-            imageSettings,
-            graphSettings
+            imageSettings
+            
         );
     },
 
@@ -15071,56 +15027,6 @@ var InputNumberEditor = React.createClass({displayName: 'InputNumberEditor',
                 BlurInput( {value:"" + this.props.value,
                            onChange:this.handleAnswerChange,
                            ref:"input"} )
-            )),
-
-            React.DOM.div(null, 
-                React.DOM.label(null, 
-                    ' ',"Unsimplified answers",' ',
-                    React.DOM.select( {value:this.props.simplify,
-                            onChange:function(e)  {
-                                this.props.onChange({simplify:
-                                e.target.value});
-                            }.bind(this)}, 
-                        React.DOM.option( {value:"required"}, "will not be graded"),
-                        React.DOM.option( {value:"optional"}, "will be accepted"),
-                        React.DOM.option( {value:"enforced"}, "will be marked wrong")
-                    )
-                ),
-                InfoTip(null, 
-                    React.DOM.p(null, "Normally select \"will not be graded\". This will give the"+' '+
-                    "user a message saying the answer is correct but not"+' '+
-                    "simplified. The user will then have to simplify it and"+' '+
-                    "re-enter, but will not be penalized. (5th grade and"+' '+
-                    "anything after)"),
-                    React.DOM.p(null, "Select \"will be accepted\" only if the user is not"+' '+
-                    "expected to know how to simplify fractions yet. (Anything"+' '+
-                    "prior to 5th grade)"),
-                    React.DOM.p(null, "Select \"will be marked wrong\" only if we are"+' '+
-                    "specifically assessing the ability to simplify.")
-                )
-            ),
-
-            React.DOM.div(null, React.DOM.label(null, 
-                React.DOM.input( {type:"checkbox",
-                    checked:this.props.inexact,
-                    onChange:function(e)  {
-                        this.props.onChange({inexact: e.target.checked});
-                    }.bind(this)} ),
-                ' ',"Allow inexact answers",' '
-            ),
-
-            React.DOM.label(null, 
-            React.DOM.input( /* TODO(emily): don't use a hidden checkbox for alignment */
-                {type:"checkbox", style:{visibility: "hidden"}} ),
-            ' ',"Max error:",' ',
-            React.DOM.input( {type:"text", disabled:!this.props.inexact,
-                defaultValue:this.props.maxError,
-                onBlur:function(e)  {
-                    var ans = "" + (Util.firstNumericalParse(
-                            e.target.value) || 0);
-                    e.target.value = ans;
-                    this.props.onChange({maxError: ans});
-                }.bind(this)} )
             )),
 
             React.DOM.div(null, 
@@ -17700,7 +17606,8 @@ module.exports = {
     name: "interactive-graph",
     displayName: "Interactive graph",
     widget: InteractiveGraph,
-    editor: InteractiveGraphEditor
+    editor: InteractiveGraphEditor,
+    hidden: true
 };
 
 },{"../components/graph-settings.jsx":121,"../components/graph.jsx":122,"../components/number-input.jsx":129,"../interactive2.js":148,"../util.js":168,"react":115,"react-components/info-tip":5}],181:[function(require,module,exports){
@@ -18858,7 +18765,8 @@ module.exports = {
     name: "matcher",
     displayName: "Two column matcher",
     widget: Matcher,
-    editor: MatcherEditor
+    editor: MatcherEditor,
+    hidden: true
 };
 
 },{"../components/prop-check-box.jsx":130,"../components/sortable.jsx":132,"../components/text-list-editor.jsx":135,"../renderer.jsx":165,"../util.js":168,"react":115,"react-components/info-tip":5}],184:[function(require,module,exports){
@@ -19219,7 +19127,8 @@ module.exports = {
     widget: Measurer,
     editor: MeasurerEditor,
     version: {major: 1, minor: 0},
-    propUpgrades: propUpgrades
+    propUpgrades: propUpgrades,
+    hidden: true
 };
 
 },{"../components/number-input.jsx":129,"../components/prop-check-box.jsx":130,"../components/range-input.jsx":131,"../mixins/changeable.jsx":159,"../mixins/jsonify-props.jsx":160,"react":115,"react-components/info-tip":5}],185:[function(require,module,exports){
@@ -20090,7 +19999,8 @@ module.exports = {
     displayName: "Number line",
     widget: NumberLine,
     editor: NumberLineEditor,
-    transform: NumberLineTransform
+    transform: NumberLineTransform,
+    hidden: true
 };
 
 },{"../components/graphie.jsx":125,"../components/number-input.jsx":129,"../components/prop-check-box.jsx":130,"../components/range-input.jsx":131,"../interactive2.js":148,"../interactive2/interactive-util.js":149,"../mixins/changeable.jsx":159,"../mixins/jsonify-props.jsx":160,"../util.js":168,"react":115,"react-components/button-group":3,"react-components/info-tip":5}],186:[function(require,module,exports){
@@ -20548,7 +20458,8 @@ module.exports = {
     displayName: "Number text box (new)",
     widget: NumericInput,
     editor: NumericInputEditor,
-    transform: propsTransform
+    transform: propsTransform,
+    hidden: true
 };
 
 },{"../components/input-with-examples.jsx":126,"../components/multi-button-group.jsx":128,"../components/number-input.jsx":129,"../components/prop-check-box.jsx":130,"../editor.jsx":143,"../mixins/changeable.jsx":159,"../mixins/jsonify-props.jsx":160,"../util.js":168,"react":115,"react-components/button-group":3,"react-components/info-tip":5}],187:[function(require,module,exports){
@@ -21223,7 +21134,8 @@ module.exports = {
     name: "orderer",
     displayName: "Orderer",
     widget: Orderer,
-    editor: OrdererEditor
+    editor: OrdererEditor,
+    hidden: true
 };
 
 },{"../components/text-list-editor.jsx":135,"../renderer.jsx":165,"../util.js":168,"react":115,"react-components/info-tip":5}],188:[function(require,module,exports){
@@ -22223,7 +22135,8 @@ module.exports = {
     name: "plotter",
     displayName: "Plotter",
     widget: Plotter,
-    editor: PlotterEditor
+    editor: PlotterEditor,
+    hidden: true
 };
 
 },{"../components/number-input.jsx":129,"../components/range-input.jsx":131,"../components/text-list-editor.jsx":135,"../util.js":168,"react":115,"react-components/info-tip":5}],189:[function(require,module,exports){
@@ -22561,42 +22474,14 @@ var RadioEditor = React.createClass({displayName: 'RadioEditor',
     render: function() {
         return React.DOM.div(null, 
             React.DOM.div( {className:"perseus-widget-row"}, 
-
-                React.DOM.div(null, 
-                    React.DOM.div( {className:"perseus-widget-left-col"}, 
-                        PropCheckBox( {label:"One answer per line",
-                                      labelAlignment:"right",
-                                      onePerLine:this.props.onePerLine,
-                                      onChange:this.props.onChange} )
-                    ),
-                    InfoTip(null, 
-                        React.DOM.p(null, 
-                            "Use one answer per line unless your question has"+' '+
-                            "images that might cause the answers to go off the"+' '+
-                            "page."
-                        )
-                    )
-                ),
-
+            
                 React.DOM.div( {className:"perseus-widget-left-col"}, 
                     PropCheckBox( {label:"Multiple selections",
                                   labelAlignment:"right",
                                   multipleSelect:this.props.multipleSelect,
                                   onChange:this.onMultipleSelectChange} )
-                ),
-
-                React.DOM.div( {className:"perseus-widget-right-col"}, 
-                    PropCheckBox( {label:"Randomize order",
-                                  labelAlignment:"right",
-                                  randomize:this.props.randomize,
-                                  onChange:this.props.onChange} )
-                ),
-                React.DOM.div( {className:"perseus-widget-left-col"}, 
-                    PropCheckBox( {label:"Auto-none of the above",
-                                  labelAlignment:"right",
-                                  noneOfTheAbove:this.props.noneOfTheAbove,
-                                  onChange:this.props.onChange} )
                 )
+
             ),
 
             BaseRadio(
@@ -22955,7 +22840,8 @@ module.exports = {
     name: "sorter",
     displayName: "Sorter",
     widget: Sorter,
-    editor: SorterEditor
+    editor: SorterEditor,
+    hidden: true
 };
 
 },{"../components/prop-check-box.jsx":130,"../components/sortable.jsx":132,"../components/text-list-editor.jsx":135,"../util.js":168,"react":115,"react-components/info-tip":5}],191:[function(require,module,exports){
@@ -23275,7 +23161,8 @@ module.exports = {
     name: "table",
     displayName: "Table of values",
     widget: Table,
-    editor: TableEditor
+    editor: TableEditor,
+    hidden: true
 };
 
 },{"../editor.jsx":143,"../renderer.jsx":165,"../util.js":168,"react":115,"react-components/info-tip":5}],192:[function(require,module,exports){
@@ -25795,7 +25682,8 @@ module.exports = {
     name: "transformer",
     displayName: "Transformer",
     widget: Transformer,
-    editor: TransformerEditor
+    editor: TransformerEditor,
+    hidden: true
 };
 
 },{"../components/graph-settings.jsx":121,"../components/graph.jsx":122,"../components/number-input.jsx":129,"../components/prop-check-box.jsx":130,"../tex.jsx":167,"../util.js":168,"react":115,"react-components/info-tip":5}]},{},[163])

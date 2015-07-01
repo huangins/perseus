@@ -20,7 +20,7 @@
 </head>
 <body>
 
-<div id="extras">
+<div id="extras" style="display:none;">
     <button id="toJSON">toJSON</button>
     <button id="scorePreview">Score</button>
     <button id="permalink">permalink</button>
@@ -28,11 +28,69 @@
     <span>Features:</span><span id="enabledFeatures"></span>
 </div>
 
+<div style="width:100%; text-align:center;" id='edit-button-collector'>
+</div>
+
+<h2 id='message' style='color:red;'></h2>
+<table>
+    <tr>
+        <td>qid：</td>
+        <td>
+            <span id='qid'></span>
+        </td>
+    </tr>
+    <tr>
+        <td>科目：</td>
+        <td>
+            <input id='subject'></input>
+        </td>
+    </tr>
+    <tr>
+        <td>是否開放題目：</td>
+        <td>
+            <select id='is_hidden'>
+                <option value="False">是</option>
+                <option value="True">否</option>
+            </input>
+        </td>
+    </tr>
+    <tr>
+        <td>題目來源：</td>
+        <td>
+            <input id='source'></input>
+        </td>
+    </tr>
+    <tr>
+        <td>難度：</td>
+        <td>
+            <select id='level'>
+                <option value="1">簡單</option>
+                <option value="2">中等</option>
+                <option value="3">進階</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>範圍：</td>
+        <td>
+            <textarea rows="3" cols="20" id='cover_range'></textarea>
+        </td>
+    </tr>
+    <tr>
+        <td>相關影片：</td>
+        <td>
+            <textarea rows="3" cols="20" id='related_video'></textarea>
+        </td>
+    </tr>
+</table>
 <!-- Begin Perseus HTML -->
 <div id="perseus-container">
 </div>
 <!-- End Perseus HTML -->
-
+<div style="width:100%; text-align:center;" id='save-button-collector'>
+    <span class="simple-button green" id="save">儲存改變</span>
+    <span class="simple-button orange" id="quit">取消編輯</span>
+</div>
 <!-- put an empty div here so the margin on the perseus editor has something
 to "push against" (without the div, the padding goes off the page, and the
 add hint button ends up touching the bottom of the page). -->
@@ -172,7 +230,13 @@ var enabledFeatures = {
     toolTipFormats: true,
     useMathQuill: true
 };
-
+url = window.location.hash.split('?')[0].substring(1);
+var question_dic = Perseus.Util.parseQueryString(url);
+var question = question_dic.question ? JSON.parse(question_dic.question) : defaultQuestion;
+var new_perseus_question = false;
+if (question_dic.qid == '-1'){
+    new_perseus_question = true;
+}
 $('#toJSON').on('click', function() {
     console.log(JSON.stringify(editor, null, 4));
 });
@@ -184,14 +248,153 @@ $('#permalink').on('click', function(e) {
         encodeURIComponent(JSON.stringify(editor));
     e.preventDefault();
 });
+
+$('#save').on('click',function(e){
+
+    if(question_dic.can_manage_all_questions == 'True'){
+        return_string = "Have-Authorization";}
+    if(!question_dic.uploader_id){
+        return_string = "No-Uploader-Name";}
+    if(!question_dic.can_manage_all_questions && question_dic.uploader_id != question_dic.user_id){
+        return_string = "No-Authorization";}
+    else{
+        return_string = "Have-Authorization";}
+
+
+    if (return_string == "No-Authorization" || return_string == "No-Uploader-Name") {
+        alert("很抱歉，您沒有權限編輯第" + question_dic.qid +"題。");
+    }
+    else{
+        if (confirm("修改將儲存於資料庫")) {
+            is_hidden = $('select#is_hidden').val();
+            subject = $('input#subject').val();
+            if (subject == '科目為必填' || subject == ''){
+                alert('一定要填科目喔！請填入這一題的科目，謝謝！');
+                return;
+            }
+            source = $('input#source').val();
+            level = $('select#level').val();
+            cover_range = $('textarea#cover_range').val();
+            if (cover_range == '範圍為必填' || cover_range == ''){
+                alert('一定要填範圍喔！請填入這一題的範圍，謝謝！');
+                return;
+            }
+            related_video = $('textarea#related_video').val();
+            question = JSON.stringify(editor);
+            host_name = question_dic.host_name;
+            data={'qid':question_dic.qid,
+                        'is_hidden':is_hidden,
+                        'subject':subject,
+                        'source':source,
+                        'level':level,
+                        'cover_range':cover_range,
+                        'related_video':related_video,
+                        'can_manage_all_questions':question_dic.can_manage_all_questions,
+                        'secret':question_dic.secret,
+                        'iv':question_dic.iv,
+                        'question':question
+                    };
+            if (new_perseus_question == true) {
+                newQuestion(data, 'save-perseus-question');
+            }else{
+                getQuestion(data, 'save-edit/');
+            }
+        }
+    }
+
+});
+$('#quit').on('click',function(e){
+    if (confirm("取消修改的話，未儲存之所有修改將不會儲存")) {
+        parent.close();
+    }
+});
+if (new_perseus_question == false){
+    $('#edit-button-collector').append('<span class="simple-button green" id="prev_question">編輯上一題</span>');
+    $('#edit-button-collector').append('<span class="simple-button green" id="next_question">編輯下一題</span>');
+    $('#prev_question').on('click',function(e){
+        if(question_dic.qid == 0){
+            alert('沒有上一題囉！');
+            return;
+        }
+        data={
+            'secret':question_dic.secret,
+            'iv':question_dic.iv,
+            'qid_offset':"-1"
+        };
+        getQuestion(data, 'another-question/');
+    });
+    $('#next_question').on('click',function(e){
+        if(question_dic.qid == question_dic.question_amount-1){
+            alert('沒有下一題囉！');
+            return;
+        }
+        data={
+            'secret':question_dic.secret,
+            'iv':question_dic.iv,
+            'qid_offset':"1"
+        };
+        getQuestion(data, 'another-question/');
+    });
+}
+function getQuestion(data, func){
+    host_name = question_dic.host_name;
+    $.ajax({
+        url: 'http://' + host_name + '/questionpanel/questionmanager/' + func,
+        data: data,
+        method: "POST",
+
+        success:function(data){
+            if(data == 'Have_No_Authority'){
+                parent.window.location = 'http://' + question_dic.host_name + '/questionpanel/questionmanager/';
+            }
+            else{
+                document.location.href = data;
+                document.location.reload(true);
+            }
+        },
+        error:function(xhr, ajaxOptions, thrownError){ 
+            alert(xhr.status + " " + thrownError + "\n請檢查連線狀況"); 
+        }
+    });
+};
+function newQuestion(data, func){
+    host_name = question_dic.host_name;
+    $.ajax({
+        url: 'http://' + host_name + '/questionpanel/makeperseusquestion/' + func,
+        data: data,
+        method: "POST",
+
+        success:function(data){
+             if(data == 'Have_No_Authority'){
+                // user has no authority, redirect to junyiacademy.org
+                parent.window.location = 'http://' + question_dic.host_name;
+            }
+            else{
+                document.location.href = data;
+                document.location.reload(true);
+            }
+        },
+        error:function(xhr, ajaxOptions, thrownError){ 
+            alert(xhr.status + " " + thrownError + "\n請檢查連線狀況"); 
+        }
+    });
+}
 $('#problemNum').text(problemNum);
 $('#enabledFeatures').html(_.map(enabledFeatures, function(enabled, feature) {
     return '<span style="margin-left: 5px; background: ' +
             (enabled ? "#aaffaa" : "#ffcccc") + ';">' + feature + '</span>';
 }).join(''));
 
-var query = Perseus.Util.parseQueryString(window.location.hash.substring(1));
-var question = query.content ? JSON.parse(query.content) : defaultQuestion;
+
+// don't know why!
+$('span#qid').html(question_dic.qid);
+$('select#is_hidden').val(question_dic.is_hidden);
+$('input#subject').val(question_dic.subject);
+$('input#source').val(question_dic.source);
+$('select#level').val(question_dic.level);
+$('textarea#cover_range').val(question_dic.cover_range);
+$('textarea#related_video').val(question_dic.related_video);
+$('h2#message').html(question_dic.message);
 
 Perseus.init({skipMathJax: false}).then(function() {
 
