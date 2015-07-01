@@ -231,12 +231,9 @@ var enabledFeatures = {
     useMathQuill: true
 };
 url = window.location.hash.split('?')[0].substring(1);
-var question_dic = Perseus.Util.parseQueryString(url);
-var question = question_dic.question ? JSON.parse(question_dic.question) : defaultQuestion;
-var new_perseus_question = false;
-if (question_dic.qid == '-1'){
-    new_perseus_question = true;
-}
+var question_dic = {}
+var init_data = Perseus.Util.parseQueryString(url);
+
 $('#toJSON').on('click', function() {
     console.log(JSON.stringify(editor, null, 4));
 });
@@ -282,18 +279,18 @@ $('#save').on('click',function(e){
             related_video = $('textarea#related_video').val();
             question = JSON.stringify(editor);
             host_name = question_dic.host_name;
-            data={'qid':question_dic.qid,
-                        'is_hidden':is_hidden,
-                        'subject':subject,
-                        'source':source,
-                        'level':level,
-                        'cover_range':cover_range,
-                        'related_video':related_video,
-                        'can_manage_all_questions':question_dic.can_manage_all_questions,
-                        'secret':question_dic.secret,
-                        'iv':question_dic.iv,
-                        'question':question
-                    };
+            data = {'qid':question_dic.qid,
+                    'is_hidden':is_hidden,
+                    'subject':subject,
+                    'source':source,
+                    'level':level,
+                    'cover_range':cover_range,
+                    'related_video':related_video,
+                    'can_manage_all_questions':question_dic.can_manage_all_questions,
+                    'secret':question_dic.secret,
+                    'iv':question_dic.iv,
+                    'question':question
+                };
             if (new_perseus_question == true) {
                 newQuestion(data, 'save-perseus-question');
             }else{
@@ -308,48 +305,22 @@ $('#quit').on('click',function(e){
         parent.close();
     }
 });
-if (new_perseus_question == false){
-    $('#edit-button-collector').append('<span class="simple-button green" id="prev_question">編輯上一題</span>');
-    $('#edit-button-collector').append('<span class="simple-button green" id="next_question">編輯下一題</span>');
-    $('#prev_question').on('click',function(e){
-        if(question_dic.qid == 0){
-            alert('沒有上一題囉！');
-            return;
-        }
-        data={
-            'secret':question_dic.secret,
-            'iv':question_dic.iv,
-            'qid_offset':"-1"
-        };
-        getQuestion(data, 'another-question/');
-    });
-    $('#next_question').on('click',function(e){
-        if(question_dic.qid == question_dic.question_amount-1){
-            alert('沒有下一題囉！');
-            return;
-        }
-        data={
-            'secret':question_dic.secret,
-            'iv':question_dic.iv,
-            'qid_offset':"1"
-        };
-        getQuestion(data, 'another-question/');
-    });
-}
+
 function getQuestion(data, func){
     host_name = question_dic.host_name;
     $.ajax({
         url: 'http://' + host_name + '/questionpanel/questionmanager/' + func,
         data: data,
+        dataType: 'jsonp'
         method: "POST",
 
         success:function(data){
             if(data == 'Have_No_Authority'){
+                alert("您沒有足夠權限，將跳轉至題庫管理頁面。");
                 parent.window.location = 'http://' + question_dic.host_name + '/questionpanel/questionmanager/';
             }
             else{
-                document.location.href = data;
-                document.location.reload(true);
+                renderQuestion(data);
             }
         },
         error:function(xhr, ajaxOptions, thrownError){ 
@@ -362,16 +333,17 @@ function newQuestion(data, func){
     $.ajax({
         url: 'http://' + host_name + '/questionpanel/makeperseusquestion/' + func,
         data: data,
+        dataType: 'json'
         method: "POST",
 
         success:function(data){
              if(data == 'Have_No_Authority'){
                 // user has no authority, redirect to junyiacademy.org
+                alert("您沒有足夠權限，將跳轉至首頁。");
                 parent.window.location = 'http://' + question_dic.host_name;
             }
             else{
-                document.location.href = data;
-                document.location.reload(true);
+                renderQuestion(data);
             }
         },
         error:function(xhr, ajaxOptions, thrownError){ 
@@ -386,17 +358,21 @@ $('#enabledFeatures').html(_.map(enabledFeatures, function(enabled, feature) {
 }).join(''));
 
 
-// don't know why!
-$('span#qid').html(question_dic.qid);
-$('select#is_hidden').val(question_dic.is_hidden);
-$('input#subject').val(question_dic.subject);
-$('input#source').val(question_dic.source);
-$('select#level').val(question_dic.level);
-$('textarea#cover_range').val(question_dic.cover_range);
-$('textarea#related_video').val(question_dic.related_video);
-$('h2#message').html(question_dic.message);
+function renderQuestion(question_dic) {
+    var question = question_dic.question ? JSON.parse(question_dic.question) : defaultQuestion;
+    var new_perseus_question = false;
+    if (question_dic.qid == '-1'){
+        new_perseus_question = true;
+    }
 
-Perseus.init({skipMathJax: false}).then(function() {
+    $('span#qid').html(question_dic.qid);
+    $('select#is_hidden').val(question_dic.is_hidden);
+    $('input#subject').val(question_dic.subject);
+    $('input#source').val(question_dic.source);
+    $('select#level').val(question_dic.level);
+    $('textarea#cover_range').val(question_dic.cover_range);
+    $('textarea#related_video').val(question_dic.related_video);
+    $('h2#message').html(question_dic.message);
 
     var editorProps = _.extend(question, {
         problemNum: problemNum,
@@ -423,10 +399,43 @@ Perseus.init({skipMathJax: false}).then(function() {
         Perseus.StatefulEditorPage(editorProps, null),
         document.getElementById("perseus-container")
     );
-
     // Some hacks to make debugging nicer
     window.editorPage = editor.refs.editor;
     window.itemRenderer = window.editorPage.renderer;
+    if (new_perseus_question == false){
+        $('#edit-button-collector').append('<span class="simple-button green" id="prev_question">編輯上一題</span>');
+        $('#edit-button-collector').append('<span class="simple-button green" id="next_question">編輯下一題</span>');
+        $('#prev_question').on('click',function(e){
+            if(question_dic.qid == 0){
+                alert('沒有上一題囉！');
+                return;
+            }
+            data={
+                'secret':question_dic.secret,
+                'iv':question_dic.iv,
+                'qid_offset':"-1"
+            };
+            getQuestion(data, 'another-question/');
+        });
+        $('#next_question').on('click',function(e){
+            if(question_dic.qid == question_dic.question_amount-1){
+                alert('沒有下一題囉！');
+                return;
+            }
+            data={
+                'secret':question_dic.secret,
+                'iv':question_dic.iv,
+                'qid_offset':"1"
+            };
+            getQuestion(data, 'another-question/');
+        });
+    }
+}
+
+Perseus.init({skipMathJax: false}).then(function() {
+
+    getQuestion(init_data, 'get-question');
+
 }).then(function() {
 }, function(err) {
     console.error(err);
