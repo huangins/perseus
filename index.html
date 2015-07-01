@@ -307,7 +307,7 @@ $('#quit').on('click',function(e){
 });
 
 function getQuestion(data, func){
-    host_name = question_dic.host_name;
+    host_name = init_data.host_name;
     $.ajax({
         url: 'http://' + host_name + '/questionpanel/questionmanager/' + func,
         data: data,
@@ -317,7 +317,7 @@ function getQuestion(data, func){
         success:function(data){
             if(data == 'Have_No_Authority'){
                 alert("您沒有足夠權限，將跳轉至題庫管理頁面。");
-                parent.window.location = 'http://' + question_dic.host_name + '/questionpanel/questionmanager/';
+                parent.window.location = 'http://' + init_data.host_name + '/questionpanel/questionmanager/';
             }
             else{
                 renderQuestion(data);
@@ -329,7 +329,7 @@ function getQuestion(data, func){
     });
 };
 function newQuestion(data, func){
-    host_name = question_dic.host_name;
+    host_name = init_data.host_name;
     $.ajax({
         url: 'http://' + host_name + '/questionpanel/makeperseusquestion/' + func,
         data: data,
@@ -340,7 +340,7 @@ function newQuestion(data, func){
              if(data == 'Have_No_Authority'){
                 // user has no authority, redirect to junyiacademy.org
                 alert("您沒有足夠權限，將跳轉至首頁。");
-                parent.window.location = 'http://' + question_dic.host_name;
+                parent.window.location = 'http://' + init_data.host_name;
             }
             else{
                 renderQuestion(data);
