@@ -415,7 +415,7 @@ function renderQuestion(question_dic) {
                 'iv':question_dic.iv,
                 'qid_offset':"-1"
             };
-            getQuestion(data, 'another-question/');
+            getQuestion(data, 'offset-question/');
         });
         $('#next_question').on('click',function(e){
             if(question_dic.qid == question_dic.question_amount-1){
@@ -427,14 +427,14 @@ function renderQuestion(question_dic) {
                 'iv':question_dic.iv,
                 'qid_offset':"1"
             };
-            getQuestion(data, 'another-question/');
+            getQuestion(data, 'offset-question/');
         });
     }
 }
 
 Perseus.init({skipMathJax: false}).then(function() {
-
-    getQuestion(init_data, 'get-question');
+    init_data['qid_offset'] = 0;
+    getQuestion(init_data, 'offset-question/');
 
 }).then(function() {
 }, function(err) {
