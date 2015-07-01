@@ -233,6 +233,40 @@ var enabledFeatures = {
 url = window.location.hash.split('?')[0].substring(1);
 var question_dic = {}
 var init_data = Perseus.Util.parseQueryString(url);
+var new_perseus_question = false;
+if (init_data.qid == '-1'){
+    new_perseus_question = true;
+}
+if (new_perseus_question == false){
+    if ($('#edit-button-collector').children().length == 0) {
+        $('#edit-button-collector').append('<span class="simple-button green" id="prev_question">編輯上一題</span>');
+        $('#edit-button-collector').append('<span class="simple-button green" id="next_question">編輯下一題</span>');
+    }
+    $('#prev_question').on('click',function(e){
+        if(question_dic.qid == 0){
+            alert('沒有上一題囉！');
+            return;
+        }
+        data={
+            'secret':question_dic.secret,
+            'iv':question_dic.iv,
+            'qid_offset':"-1"
+        };
+        getQuestion(data, 'offset-question/');
+    });
+    $('#next_question').on('click',function(e){
+        if(question_dic.qid == question_dic.question_amount-1){
+            alert('沒有下一題囉！');
+            return;
+        }
+        data={
+            'secret':question_dic.secret,
+            'iv':question_dic.iv,
+            'qid_offset':"1"
+        };
+        getQuestion(data, 'offset-question/');
+    });
+}
 
 $('#toJSON').on('click', function() {
     console.log(JSON.stringify(editor, null, 4));
@@ -360,7 +394,7 @@ $('#enabledFeatures').html(_.map(enabledFeatures, function(enabled, feature) {
 
 function renderQuestion(question_dic) {
     var question = question_dic.question ? JSON.parse(question_dic.question) : defaultQuestion;
-    var new_perseus_question = false;
+    new_perseus_question = false;
     if (question_dic.qid == '-1'){
         new_perseus_question = true;
     }
@@ -402,36 +436,6 @@ function renderQuestion(question_dic) {
     // Some hacks to make debugging nicer
     window.editorPage = editor.refs.editor;
     window.itemRenderer = window.editorPage.renderer;
-    if (new_perseus_question == false){
-        if ($('#edit-button-collector').children().length == 0) {
-            $('#edit-button-collector').append('<span class="simple-button green" id="prev_question">編輯上一題</span>');
-            $('#edit-button-collector').append('<span class="simple-button green" id="next_question">編輯下一題</span>');
-        }
-        $('#prev_question').on('click',function(e){
-            if(question_dic.qid == 0){
-                alert('沒有上一題囉！');
-                return;
-            }
-            data={
-                'secret':question_dic.secret,
-                'iv':question_dic.iv,
-                'qid_offset':"-1"
-            };
-            getQuestion(data, 'offset-question/');
-        });
-        $('#next_question').on('click',function(e){
-            if(question_dic.qid == question_dic.question_amount-1){
-                alert('沒有下一題囉！');
-                return;
-            }
-            data={
-                'secret':question_dic.secret,
-                'iv':question_dic.iv,
-                'qid_offset':"1"
-            };
-            getQuestion(data, 'offset-question/');
-        });
-    }
 }
 
 Perseus.init({skipMathJax: false}).then(function() {
