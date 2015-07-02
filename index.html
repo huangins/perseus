@@ -28,10 +28,8 @@
     <span>Features:</span><span id="enabledFeatures"></span>
 </div>
 
-<div style="width:100%; text-align:center;" id='edit-button-collector'>
+<div style="width:100%; text-align:center; margin: 20px;" id='edit-button-collector'>
 </div>
-
-<h2 id='message' style='color:red;'></h2>
 <table>
     <tr>
         <td>qid：</td>
@@ -87,7 +85,7 @@
 <div id="perseus-container">
 </div>
 <!-- End Perseus HTML -->
-<div style="width:100%; text-align:center;" id='save-button-collector'>
+<div style="width:100%; text-align:center; margin: 20px;" id='save-button-collector'>
     <span class="simple-button green" id="save">儲存改變</span>
     <span class="simple-button orange" id="quit">取消編輯</span>
 </div>
@@ -282,20 +280,30 @@ $('#permalink').on('click', function(e) {
 
 $('#save').on('click',function(e){
 
-    if(question_dic.can_manage_all_questions == 'True'){
-        return_string = "Have-Authorization";}
-    if(!question_dic.uploader_id){
-        return_string = "No-Uploader-Name";}
-    if(!question_dic.can_manage_all_questions && question_dic.uploader_id != question_dic.user_id){
-        return_string = "No-Authorization";}
-    else{
-        return_string = "Have-Authorization";}
+    if(question_dic.can_manage_all_questions == 'True') {
+        can_manage_all_questions = true;
+    }
+    else if (question_dic.can_manage_all_questions == 'False') {
+        can_manage_all_questions = false;
+    }
+    else {
+        can_manage_all_questions = question_dic.can_manage_all_questions;
+    }
 
+    if (!question_dic.uploader_id) {
+        return_string = "No-Uploader-Name";
+    }
+    else if (!can_manage_all_questions && question_dic.uploader_id != question_dic.user_id) {
+        return_string = "No-Authorization";
+    }
+    else {
+        return_string = "Have-Authorization";
+    }
 
     if (return_string == "No-Authorization" || return_string == "No-Uploader-Name") {
         alert("很抱歉，您沒有權限編輯第" + question_dic.qid +"題。");
     }
-    else{
+    else {
         if (confirm("修改將儲存於資料庫")) {
             is_hidden = $('select#is_hidden').val();
             subject = $('input#subject').val();
@@ -408,7 +416,9 @@ function renderQuestion(question_dic) {
     $('select#level').val(question_dic.level);
     $('textarea#cover_range').val(question_dic.cover_range);
     $('textarea#related_video').val(question_dic.related_video);
-    $('h2#message').html(question_dic.message);
+    if (question_dic.message) {
+        confirm(question_dic.message);
+    }
 
     var editorProps = _.extend(question, {
         problemNum: problemNum,
