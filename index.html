@@ -47,8 +47,8 @@
         <td>是否開放題目：</td>
         <td>
             <select id='is_hidden'>
-                <option value="False">是</option>
-                <option value="True">否</option>
+                <option value="False">公開</option>
+                <option value="True">隱藏</option>
             </input>
         </td>
     </tr>
@@ -410,7 +410,13 @@ function renderQuestion(question_dic) {
     }
 
     $('span#qid').html(question_dic.qid);
-    $('select#is_hidden').val(question_dic.is_hidden);
+    if (question_dic.is_hidden === true) {
+        $('select#is_hidden').val('True');
+    }
+    else {
+        $('select#is_hidden').val('False');
+    }
+    
     $('input#subject').val(question_dic.subject);
     $('input#source').val(question_dic.source);
     $('select#level').val(question_dic.level);
