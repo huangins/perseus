@@ -354,6 +354,7 @@ function getQuestion(data, func){
                 parent.window.location = 'http://' + init_data.host_name + '/questionpanel/questionmanager/';
             }
             else{
+                question_dic = data;
                 renderQuestion(data);
             }
         },
@@ -377,6 +378,7 @@ function newQuestion(data, func){
                 parent.window.location = 'http://' + init_data.host_name;
             }
             else{
+                question_dic = data;
                 renderQuestion(data);
             }
         },
