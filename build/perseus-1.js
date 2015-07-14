@@ -1,5 +1,5 @@
 /*! Perseus | http://github.com/Khan/perseus */
-// commit 9944e869cfda69d806684770e490795745ee66a2
+// commit beaa1bd715650b59dc85a2218e9eb2f3a01ed554
 // branch gh-pages
 !function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Perseus=e():"undefined"!=typeof global?global.Perseus=e():"undefined"!=typeof self&&(self.Perseus=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -8437,7 +8437,7 @@ var Editor = React.createClass({displayName: 'Editor',
                 React.DOM.option( {value:"matrix"}, "矩陣"),
                 React.DOM.option( {value:"alignment"}, "互相對齊的方程式(用&對齊)"),
                 React.DOM.option( {value:"piecewise"}, "聯立方程式"),
-                React.DOM.option( {value:"color"}, "顏色(支援red/blue/orange/pink/green/gray/purple/HTML色碼)")
+                React.DOM.option( {value:"color"}, "顏色(支援red/blue/orange/fuchsia/green/gray/purple/HTML色碼)")
             );
 
             if (!this.props.immutableWidgets) {
@@ -8626,9 +8626,9 @@ var Editor = React.createClass({displayName: 'Editor',
         } else if (templateType === "overline") {
             template = "$\\overline{ABC}$";
         } else if (templateType === "frown") {
-            template = "$\\buildrel\\frown\\over {ABC}$";
+            template = "$\\overset{\\LARGE \\frown}{\\small{AB}}$";
         } else if (templateType === "vec") {
-            template = "$\\vec{AB}$";
+            template = "$\\overset{\\large \\rightharpoonup}{\\small{AB}}$";
         } else if (templateType === "table") {
             template = "header 1 | header 2 | header 3\n" +
                        "- | - | -\n" +
@@ -8644,13 +8644,13 @@ var Editor = React.createClass({displayName: 'Editor',
                        "x+5-5 &= 30-5 \\\\" +
                        "x &= 25 \\end{align}$";
         } else if (templateType === "piecewise") {
-            template = "\\begin{cases}" +
+            template = "$\\begin{cases}" +
                        "x-3=5 \\\\" +
                        "3x+5y=0 \\\\" +
                        "x^2+5=-1 \\\\" +
                        "\\end{cases}$";
         } else if (templateType === "color") {
-            template = "$\\color{red}{顏色可以自己換}$";
+            template = "$\\color{fuchsia}{顏色可以自己換}$";
         } else {
             throw new Error("Invalid template type: " + templateType);
         }
@@ -21402,17 +21402,17 @@ var Plotter = React.createClass({displayName: 'Plotter',
             .addClass("rotate");
     },
 
-	labelCategory: function(x, category) {
-		var graphie = this.graphie;
-		category = category + "";
-		var isTeX = false;
-		var mathyCategory = category.match(/^\$(.*)\$$/);
-		if (mathyCategory) {
-			category = mathyCategory[1];
-			isTeX = true;
-		}
-		graphie.label([x, 0], category, "below", isTeX);
-	},
+  labelCategory: function(x, category) {
+    var graphie = this.graphie;
+    category = category + "";
+    var isTeX = false;
+    var mathyCategory = category.match(/^\$(.*)\$$/);
+    if (mathyCategory) {
+      category = mathyCategory[1];
+      isTeX = true;
+    }
+    graphie.label([x, 0], category, "below", isTeX);
+  },
 
     setupCategories: function(config) {
         var self = this;

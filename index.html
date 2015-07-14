@@ -164,54 +164,11 @@ window.Perseus = Perseus;
 
 var defaultQuestion = {
     "question": {
-        "content": "[[☃ example-graphie-widget 1]]",
-        "widgets": {
-            "example-graphie-widget 1": {
-                "type": "example-graphie-widget",
-                "graded": true,
-                "options": {
-                    "correct": [
-                        -1,
-                        -3
-                    ],
-                    "graph": {
-                        "box": [
-                            340,
-                            340
-                        ],
-                        "labels": [
-                            "x",
-                            "y"
-                        ],
-                        "range": [
-                            [
-                                -10,
-                                10
-                            ],
-                            [
-                                -10,
-                                10
-                            ]
-                        ],
-                        "step": [
-                            1,
-                            1
-                        ],
-                        "gridStep": [
-                            1,
-                            1
-                        ],
-                        "valid": true,
-                        "backgroundImage": null,
-                        "markings": "grid",
-                        "showProtractor": false
-                    }
-                }
-            }
-        }
+        "content": "請在這裡填入問題",
+        "widgets": {}
     },
     "answerArea": {
-        "type": "multiple",
+        "type": "radio",
         "options": {
             "content": "",
             "widgets": {}
@@ -290,10 +247,10 @@ $('#save').on('click',function(e){
         can_manage_all_questions = question_dic.can_manage_all_questions;
     }
 
-    if (!question_dic.uploader_id) {
+    if (!new_perseus_question && !question_dic.uploader_id) {
         return_string = "No-Uploader-Name";
     }
-    else if (!can_manage_all_questions && question_dic.uploader_id != question_dic.user_id) {
+    else if (!new_perseus_question && !can_manage_all_questions && question_dic.uploader_id != question_dic.user_id) {
         return_string = "No-Authorization";
     }
     else {
@@ -349,27 +306,41 @@ $('#quit').on('click',function(e){
 });
 
 function getQuestion(data, func){
-    host_name = init_data.host_name;
-    $.ajax({
-        url: 'http://' + host_name + '/questionpanel/questionmanager/' + func,
-        data: data,
-        dataType: 'json',
-        method: "POST",
+    if (new_perseus_question) {
+        default_question_dic = {
+            'is_hidden': true,
+            'subject': '科目為必填',
+            'source': '',
+            'level': 1,
+            'cover_range': ['範圍為必填'],
+            'related_video': []
+        };
+        $.extend(default_question_dic, init_data);
+        question_dic = default_question_dic;
+        renderQuestion(default_question_dic);
+    }
+    else {
+        $.ajax({
+            url: 'http://' + init_data.host_name + '/questionpanel/questionmanager/' + func,
+            data: data,
+            dataType: 'json',
+            method: "POST",
 
-        success:function(data){
-            if(data == 'Have_No_Authority'){
-                alert("您沒有足夠權限，將跳轉至題庫管理頁面。");
-                parent.window.location = 'http://' + init_data.host_name + '/questionpanel/questionmanager/';
+            success:function(data){
+                if(data == 'Have_No_Authority'){
+                    alert("您沒有足夠權限，將跳轉至題庫管理頁面。");
+                    parent.window.location = 'http://' + init_data.host_name + '/questionpanel/questionmanager/';
+                }
+                else{
+                    question_dic = data;
+                    renderQuestion(data);
+                }
+            },
+            error:function(xhr, ajaxOptions, thrownError){ 
+                alert(xhr.status + " " + thrownError + "\n請檢查連線狀況"); 
             }
-            else{
-                question_dic = data;
-                renderQuestion(data);
-            }
-        },
-        error:function(xhr, ajaxOptions, thrownError){ 
-            alert(xhr.status + " " + thrownError + "\n請檢查連線狀況"); 
-        }
-    });
+        });
+    }
 };
 function newQuestion(data, func){
     host_name = init_data.host_name;

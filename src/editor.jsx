@@ -341,7 +341,7 @@ var Editor = React.createClass({
                 <option value="matrix">矩陣</option>
                 <option value="alignment">互相對齊的方程式(用&amp;對齊)</option>
                 <option value="piecewise">聯立方程式</option>
-                <option value="color">顏色(支援red/blue/orange/pink/green/gray/purple/HTML色碼)</option>
+                <option value="color">顏色(支援red/blue/orange/fuchsia/green/gray/purple/HTML色碼)</option>
             </select>;
 
             if (!this.props.immutableWidgets) {
@@ -530,9 +530,9 @@ var Editor = React.createClass({
         } else if (templateType === "overline") {
             template = "$\\overline{ABC}$";
         } else if (templateType === "frown") {
-            template = "$\\buildrel\\frown\\over {ABC}$";
+            template = "$\\overset{\\LARGE \\frown}{\\small{AB}}$";
         } else if (templateType === "vec") {
-            template = "$\\vec{AB}$";
+            template = "$\\overset{\\large \\rightharpoonup}{\\small{AB}}$";
         } else if (templateType === "table") {
             template = "header 1 | header 2 | header 3\n" +
                        "- | - | -\n" +
@@ -548,13 +548,13 @@ var Editor = React.createClass({
                        "x+5-5 &= 30-5 \\\\" +
                        "x &= 25 \\end{align}$";
         } else if (templateType === "piecewise") {
-            template = "\\begin{cases}" +
+            template = "$\\begin{cases}" +
                        "x-3=5 \\\\" +
                        "3x+5y=0 \\\\" +
                        "x^2+5=-1 \\\\" +
                        "\\end{cases}$";
         } else if (templateType === "color") {
-            template = "$\\color{red}{顏色可以自己換}$";
+            template = "$\\color{fuchsia}{顏色可以自己換}$";
         } else {
             throw new Error("Invalid template type: " + templateType);
         }
